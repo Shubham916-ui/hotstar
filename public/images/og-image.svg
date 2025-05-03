@@ -1,0 +1,27 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="1200" height="630" fill="url(#paint0_linear)" />
+  
+  <!-- Hotstar logo text -->
+  <text x="600" y="290" font-family="Arial, sans-serif" font-weight="bold" font-size="120" text-anchor="middle" fill="#FFFFFF">
+    <tspan fill="#3B82F6">Hot</tspan><tspan>star</tspan>
+  </text>
+  
+  <!-- Tagline -->
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="48" text-anchor="middle" fill="#E2E8F0">
+    Movies • TV • Sports
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="450" font-family="Arial, sans-serif" font-size="32" text-anchor="middle" fill="#CBD5E1">
+    Premium entertainment at your fingertips
+  </text>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1E3A8A" />
+      <stop offset="1" stop-color="#0F172A" />
+    </linearGradient>
+  </defs>
+</svg> 

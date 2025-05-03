@@ -1,3 +1,22 @@
+/* Custom styles for the Hotstar clone */
+
+/* For smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* For preventing overflow issues */
+body {
+  overflow-x: hidden;
+}
+
+/* Remove outline on mobile devices */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 .App {
   text-align: center;
 }
@@ -35,4 +54,302 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Theme transition styles */
+.theme-transitioning * {
+  transition-duration: 500ms !important;
+}
+
+/* Enhance transition smoothness for specific elements */
+nav *,
+section *,
+.from-blue-900,
+.to-blue-800,
+.dark\:from-gray-800,
+.dark\:to-gray-900,
+[class*="bg-blue"],
+[class*="bg-gray"],
+[class*="shadow"] {
+  transition: all 550ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Transition for text elements */
+h1,
+h2,
+h3,
+p,
+span,
+button {
+  transition: color 400ms ease-in-out, background-color 400ms ease-in-out,
+    border-color 400ms ease-in-out !important;
+}
+
+/* Add styles for the sidebar transitions */
+@keyframes sidebarReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Custom glow effect for active sidebar items */
+.sidebar-active-glow {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* Smooth transition for sidebar expansion/collapse */
+.sidebar-transition {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Improved animations for slide-out sidebar with smoother transitions */
+.sidebar-slide-in {
+  animation: slideIn 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.sidebar-slide-out {
+  animation: slideOut 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.sidebar-overlay-fade-in {
+  animation: fadeIn 300ms ease-in-out forwards;
+}
+
+.sidebar-overlay-fade-out {
+  animation: fadeOut 300ms ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  to {
+    transform: translateX(0);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  to {
+    transform: translateX(-100%);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(2px);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(2px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* Subtle glow for the sidebar trigger */
+.sidebar-trigger {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Touch-friendly improvements for mobile */
+@media (max-width: 768px) {
+  .sidebar-active-item {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
+
+  /* Larger touch targets for mobile */
+  .sidebar-menu-item {
+    padding: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Slim sidebar styles */
+.slim-sidebar {
+  transition: width 300ms ease-in-out, background-color 300ms ease-in-out;
+  backdrop-filter: saturate(180%) blur(5px);
+  will-change: width, transform;
+}
+
+.slim-sidebar:hover {
+  width: 240px;
+}
+
+.slim-sidebar-overlay {
+  transition: opacity 300ms ease-in-out, backdrop-filter 300ms ease-in-out;
+  will-change: opacity, backdrop-filter;
+}
+
+/* Enhanced item animations */
+@keyframes fadeInStaggered {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseIcon {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Active menu item styling */
+.menu-item-active {
+  background-color: rgba(31, 128, 224, 0.15);
+  box-shadow: 0 0 10px rgba(31, 128, 224, 0.1);
+}
+
+/* Fix for main content to avoid layout shift */
+.main-content {
+  margin-left: 60px; /* Updated for new sidebar width */
+  transition: margin-left 300ms ease-in-out;
+  width: calc(100% - 60px); /* Updated for new sidebar width */
+}
+
+/* Special styles for the upgrade link */
+.upgrade-link {
+  color: #1f80e0;
+  font-weight: 500;
+}
+
+/* Preserve space for icons in slim mode */
+.menu-icon-container {
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Smoother transitions for text */
+.menu-text {
+  transition: opacity 250ms ease-in-out, transform 250ms ease-in-out;
+  transform-origin: left center;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Edge glow effect for expanded sidebar */
+.sidebar-edge-glow {
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(31, 128, 224, 0.2);
+}
+
+@media (max-width: 768px) {
+  .slim-sidebar {
+    width: 0 !important;
+  }
+
+  .slim-sidebar.expanded {
+    width: 240px !important;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .main-content.sidebar-expanded {
+    margin-left: 0;
+  }
+}
+
+/* Hide scrollbar for cleaner look */
+.slim-sidebar nav::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Add image loading animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+/* Optimize preloading */
+.invisible-preload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Animation for the TrendingBar blob effect */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }
