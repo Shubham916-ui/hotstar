@@ -243,32 +243,6 @@ const Hero: React.FC = () => {
         </motion.div>
       </motion.div>
 
-      {/* Trending Shows Strip - Optional, can be removed if not needed */}
-      <motion.div
-        className="w-full bg-gradient-to-r from-blue-900 to-blue-800 py-4 px-6 md:px-16 lg:px-24"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5, duration: 0.5 }}
-      >
-        <div className="flex items-center">
-          <span className="text-white font-semibold mr-4">Trending Now:</span>
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            <div className="flex-shrink-0 bg-blue-700 rounded-md px-3 py-1 text-white text-sm">
-              Game of Thrones
-            </div>
-            <div className="flex-shrink-0 bg-blue-700 rounded-md px-3 py-1 text-white text-sm">
-              Loki
-            </div>
-            <div className="flex-shrink-0 bg-blue-700 rounded-md px-3 py-1 text-white text-sm">
-              House of the Dragon
-            </div>
-            <div className="flex-shrink-0 bg-blue-700 rounded-md px-3 py-1 text-white text-sm">
-              The Last of Us
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Video Trailer Modal */}
       {showTrailer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

@@ -563,7 +563,11 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
               <img
                 src="/images/chat-logo.png"
                 alt="Logo"
-                style={{ height: "28px", width: "28px", borderRadius: "50%" }}
+                style={{
+                  height: "31.74px",
+                  width: "51px",
+                  borderRadius: "4px",
+                }}
               />
             </div>
           ) : (
@@ -576,7 +580,11 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
               <img
                 src="/images/chat-logo.png"
                 alt="Logo"
-                style={{ height: "28px", width: "28px", borderRadius: "50%" }}
+                style={{
+                  height: "31.74px",
+                  width: "51px",
+                  borderRadius: "4px",
+                }}
               />
             </div>
           )}

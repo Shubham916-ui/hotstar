@@ -5,8 +5,8 @@ import Hero from "./components/Hero";
 import TrendingNow from "./components/TrendingNow";
 import PopularMovies from "./components/PopularMovies";
 import TimeBasedContent from "./components/TimeBasedContent";
+import { ContinueWatchingTray } from "./components/TimeBasedContent";
 import Footer from "./components/Footer";
-import TrendingBar from "./components/TrendingBar";
 import { motion } from "framer-motion";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import LazyImage, {
@@ -29,6 +29,11 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="w-full">
         <Hero />
+      </section>
+
+      {/* Continue Watching section - Directly below the hero banner */}
+      <section className="mt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ContinueWatchingTray />
       </section>
 
       {/* Content Sections */}
@@ -403,8 +408,6 @@ const AppContent: React.FC = () => {
             isSidebarExpanded ? "xl:ml-240" : ""
           }`}
         >
-          <TrendingBar />
-
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/tv" element={<TVPage />} />

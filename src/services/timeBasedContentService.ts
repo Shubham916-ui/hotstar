@@ -267,7 +267,18 @@ export const getContentByTime = (
 
   // If content type is specified, filter by it
   if (contentType && contentType !== "all") {
-    filtered = filtered.filter((item) => item.genre === contentType);
+    if (
+      contentType === "movie" ||
+      contentType === "episode" ||
+      contentType === "documentary" ||
+      contentType === "short"
+    ) {
+      // Filter by content type
+      filtered = filtered.filter((item) => item.type === contentType);
+    } else {
+      // Filter by genre
+      filtered = filtered.filter((item) => item.genre === contentType);
+    }
   }
 
   return filtered;
@@ -288,7 +299,18 @@ export const getContentUnderTime = (
 
   // If content type is specified, filter by it
   if (contentType && contentType !== "all") {
-    filtered = filtered.filter((item) => item.genre === contentType);
+    if (
+      contentType === "movie" ||
+      contentType === "episode" ||
+      contentType === "documentary" ||
+      contentType === "short"
+    ) {
+      // Filter by content type
+      filtered = filtered.filter((item) => item.type === contentType);
+    } else {
+      // Filter by genre
+      filtered = filtered.filter((item) => item.genre === contentType);
+    }
   }
 
   return filtered;
@@ -314,9 +336,22 @@ export const getContentGroupedByTime = (
 
   // If content type specified, apply that filter
   if (contentType && contentType !== "all") {
-    filteredByTime = filteredByTime.filter(
-      (item) => item.genre === contentType
-    );
+    if (
+      contentType === "movie" ||
+      contentType === "episode" ||
+      contentType === "documentary" ||
+      contentType === "short"
+    ) {
+      // Filter by content type
+      filteredByTime = filteredByTime.filter(
+        (item) => item.type === contentType
+      );
+    } else {
+      // Filter by genre
+      filteredByTime = filteredByTime.filter(
+        (item) => item.genre === contentType
+      );
+    }
   }
 
   // Short content for quick viewing
@@ -347,6 +382,35 @@ export const getContentGroupedByTime = (
     maximizeTime,
     episodes,
   };
+};
+
+/**
+ * Gets all unique genres from the content library
+ */
+export const getAllGenres = (): string[] => {
+  const genres = allContent
+    .map((item) => item.genre)
+    .filter((genre): genre is string => genre !== undefined);
+
+  // Get unique genres
+  return Array.from(new Set(genres));
+};
+
+/**
+ * Gets content grouped by genres for flexible recommendations
+ */
+export const getContentGroupedByGenres = (availableTimeMinutes: number) => {
+  const allGenres = getAllGenres();
+  const result: Record<string, ContentItem[]> = {
+    all: getContentByTime(availableTimeMinutes, 5),
+  };
+
+  // Add content for each genre
+  allGenres.forEach((genre) => {
+    result[genre] = getContentByTime(availableTimeMinutes, 5, genre);
+  });
+
+  return result;
 };
 
 export type { ContentItem };
