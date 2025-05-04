@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import LazyImage, { DEFAULT_POSTER_FALLBACK_IMAGE } from "./common/LazyImage";
@@ -48,13 +48,31 @@ const cardVariants = {
   },
 };
 
-// CSS for the glowing animation
-const glowKeyframes = `
+// CSS for the glowing animation and scrolling
+const scrollStyles = `
 /* Fix to ensure cards don't get cut off when moving up */
 .trending-card-container {
   padding: 20px 0;
   margin: -20px 0;
-  overflow: visible !important;
+  overflow-x: auto !important;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  /* Add scroll snap for better UX */
+  scroll-snap-type: x proximity;
+  scroll-padding: 0 16px;
+  width: auto;
+  flex-wrap: nowrap;
+}
+
+.trending-card-container > article {
+  scroll-snap-align: start;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.trending-card-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
 }
 
 .trending-movie-card {
@@ -71,17 +89,68 @@ const glowKeyframes = `
 }
 
 .trending-section {
-  overflow: visible !important;
+  position: relative;
 }
 
 .trending-card-wrapper {
-  overflow: visible !important;
-}`;
+  overflow-x: hidden !important;
+  position: relative;
+  width: 100%;
+}
+
+.scroll-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.scroll-button:hover {
+  background-color: rgba(59, 130, 246, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.scroll-button.left {
+  left: 10px;
+}
+
+.scroll-button.right {
+  right: 10px;
+}
+
+/* Ensure proper spacing for cards */
+.movies-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .scroll-button {
+    width: 32px;
+    height: 32px;
+    opacity: 0.8;
+  }
+}
+`;
 
 const TrendingNow: React.FC = () => {
   // State for the modal
   const [selectedMovie, setSelectedMovie] = useState<MovieCard | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   // Function to open the modal with selected movie
   const handleOpenModal = (movie: MovieCard) => {
@@ -97,6 +166,89 @@ const TrendingNow: React.FC = () => {
     // Re-enable body scrolling when modal is closed
     document.body.style.overflow = "auto";
   };
+
+  // Functions for scrolling
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = Math.min(container.clientWidth * 0.8, 800);
+      container.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = Math.min(container.clientWidth * 0.8, 800);
+      container.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Touch event handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Prevent default to avoid page scrolling while swiping horizontally
+    if (touchStartX !== null) {
+      const touchCurrentX = e.touches[0].clientX;
+      const diff = touchStartX - touchCurrentX;
+      if (Math.abs(diff) > 5) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+
+    // Swipe threshold of 50px
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        // Swipe left to scroll right
+        scrollRight();
+      } else {
+        // Swipe right to scroll left
+        scrollLeft();
+      }
+    }
+
+    setTouchStartX(null);
+  };
+
+  // Add passive: false for touch events to allow preventDefault() in touchmove
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const preventDefaultTouchMove = (e: TouchEvent) => {
+      if (touchStartX !== null) {
+        const touchCurrentX = e.touches[0].clientX;
+        const diff = touchStartX - touchCurrentX;
+        if (Math.abs(diff) > 5) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    container.addEventListener("touchmove", preventDefaultTouchMove, {
+      passive: false,
+    });
+
+    return () => {
+      container.removeEventListener("touchmove", preventDefaultTouchMove);
+    };
+  }, [touchStartX]);
 
   // More reliable movie data with fallback images
   const trendingMovies: MovieCard[] = [
@@ -210,8 +362,8 @@ const TrendingNow: React.FC = () => {
       className="py-8 bg-gray-900 dark:bg-gray-950 trending-section"
       aria-labelledby="trending-heading"
     >
-      {/* Add the keyframes for the glow animation */}
-      <style dangerouslySetInnerHTML={{ __html: glowKeyframes }} />
+      {/* Add the styling for scrolling */}
+      <style dangerouslySetInnerHTML={{ __html: scrollStyles }} />
 
       <div className="px-6 md:px-16 lg:px-24">
         {/* Section header with title and see all link */}
@@ -266,86 +418,136 @@ const TrendingNow: React.FC = () => {
         {/* Movies Container */}
         {validMovies.length > 0 && (
           <div
-            className="overflow-visible pb-8 -mx-6 px-6 trending-card-wrapper"
+            className="relative overflow-hidden pb-8 -mx-6 px-6 trending-card-wrapper"
             role="region"
             aria-label="Trending movies and shows"
           >
-            <motion.div
-              className="flex space-x-4 md:space-x-6 min-w-max trending-card-container"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
+            {/* Left scroll button */}
+            <button
+              onClick={scrollLeft}
+              className="scroll-button left"
+              aria-label="Scroll left"
             >
-              {validMovies.map((movie, index) => {
-                return (
-                  <motion.article
-                    key={movie.id}
-                    className="min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex-shrink-0 cursor-pointer py-5"
-                    variants={cardVariants}
-                    whileHover="hover"
-                    onClick={() => handleOpenModal(movie)}
-                  >
-                    <div
-                      className="block bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-md overflow-hidden transition-all duration-300 h-full trending-movie-card"
-                      aria-label={`View details for ${movie.title}`}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+
+            {/* Right scroll button */}
+            <button
+              onClick={scrollRight}
+              className="scroll-button right"
+              aria-label="Scroll right"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+
+            <div
+              className="overflow-x-auto"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              <motion.div
+                ref={scrollContainerRef}
+                className="flex space-x-4 md:space-x-6 w-max trending-card-container carousel-touch-container"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                {validMovies.map((movie, index) => {
+                  return (
+                    <motion.article
+                      key={movie.id}
+                      className="min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex-shrink-0 cursor-pointer py-5"
+                      variants={cardVariants}
+                      whileHover="hover"
+                      onClick={() => handleOpenModal(movie)}
                     >
-                      <figure className="relative h-[240px] md:h-[300px] w-full">
-                        <LazyImage
-                          src={movie.imageUrl}
-                          alt={`${movie.title} poster`}
-                          className="w-full h-full object-cover object-center rounded-t-lg transition-transform duration-500"
-                          fallbackSrc={
-                            movie.fallbackImageUrl ||
-                            DEFAULT_POSTER_FALLBACK_IMAGE
-                          }
-                          priority={index < 3}
-                          aspectRatio="poster"
-                        />
+                      <div
+                        className="block bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-md overflow-hidden transition-all duration-300 h-full trending-movie-card"
+                        aria-label={`View details for ${movie.title}`}
+                      >
+                        <figure className="relative h-[240px] md:h-[300px] w-full">
+                          <LazyImage
+                            src={movie.imageUrl}
+                            alt={`${movie.title} poster`}
+                            className="w-full h-full object-cover object-center rounded-t-lg transition-transform duration-500"
+                            fallbackSrc={
+                              movie.fallbackImageUrl ||
+                              DEFAULT_POSTER_FALLBACK_IMAGE
+                            }
+                            priority={index < 3}
+                            aspectRatio="poster"
+                          />
 
-                        {/* Genre Badge */}
-                        <div className="absolute top-2 left-2 bg-blue-600/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md z-10">
-                          {movie.genre}
-                        </div>
-
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100 z-20">
-                          <div
-                            className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transform transition-transform duration-300 hover:scale-110"
-                            aria-hidden="true"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
+                          {/* Genre Badge */}
+                          <div className="absolute top-2 left-2 bg-blue-600/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md z-10">
+                            {movie.genre}
                           </div>
-                        </div>
-                      </figure>
-                      <figcaption className="p-4">
-                        <h3 className="text-white font-bold text-sm truncate">
-                          {movie.title}
-                        </h3>
-                      </figcaption>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </motion.div>
+
+                          {/* Hover Overlay */}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100 z-20">
+                            <div
+                              className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transform transition-transform duration-300 hover:scale-110"
+                              aria-hidden="true"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </figure>
+                        <figcaption className="p-4">
+                          <h3 className="text-white font-bold text-sm truncate">
+                            {movie.title}
+                          </h3>
+                        </figcaption>
+                      </div>
+                    </motion.article>
+                  );
+                })}
+              </motion.div>
+            </div>
           </div>
         )}
       </div>

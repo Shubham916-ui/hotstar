@@ -387,3 +387,114 @@ button {
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* Add improved touch handling for mobile carousels */
+.carousel-touch-container {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  overscroll-behavior-x: contain;
+  /* Ensures the scrollable area respects boundaries */
+  scroll-snap-type: x proximity;
+  min-width: 100%;
+  max-width: max-content;
+}
+
+.carousel-touch-container > * {
+  scroll-snap-align: start;
+}
+
+.trending-card-container,
+.movies-container {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+  overscroll-behavior-x: contain;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-wrap: nowrap;
+  width: auto;
+  min-width: 100%;
+  padding-right: 50px; /* Ensure there's space to see more content */
+}
+
+/* Special handle for card layouts */
+.trending-card-wrapper,
+.movies-wrapper {
+  overflow-x: hidden !important;
+  width: 100%;
+  position: relative;
+}
+
+/* Allow touch scrolling to work better on mobile */
+@media (pointer: coarse) {
+  .trending-card-container,
+  .movies-container {
+    cursor: grab;
+    padding-right: 100px; /* Add more padding for mobile swiping */
+  }
+
+  .trending-card-container:active,
+  .movies-container:active {
+    cursor: grabbing;
+  }
+
+  /* Improve scroll button visibility on mobile */
+  .scroll-button {
+    opacity: 0.8;
+    width: 36px;
+    height: 36px;
+  }
+
+  .scroll-button.right {
+    right: 5px;
+  }
+
+  .scroll-button.left {
+    left: 5px;
+  }
+}
+
+/* Add scroll indicator to show there's more content */
+.trending-card-wrapper::after,
+.movies-wrapper::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(
+    to right,
+    rgba(17, 24, 39, 0),
+    rgba(17, 24, 39, 0.8)
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+.trending-card-wrapper::before,
+.movies-wrapper::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(
+    to left,
+    rgba(17, 24, 39, 0),
+    rgba(17, 24, 39, 0.8)
+  );
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show left gradient only when scrolled */
+.trending-card-wrapper.scrolled-right::before,
+.movies-wrapper.scrolled-right::before {
+  opacity: 1;
+}

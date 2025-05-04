@@ -37,9 +37,9 @@ const HomePage = () => {
       </section>
 
       {/* Content Sections */}
-      <div className="space-y-2 mt-2 overflow-hidden">
-        {/* Trending Now Section - Add overflow-visible */}
-        <section className="overflow-visible">
+      <div className="space-y-2 mt-2">
+        {/* Trending Now Section - Ensure it has proper overflow handling */}
+        <section className="overflow-hidden">
           <TrendingNow />
         </section>
 
@@ -48,8 +48,8 @@ const HomePage = () => {
           <TimeBasedContent />
         </section>
 
-        {/* Popular Movies Section - Add overflow-visible */}
-        <section className="overflow-visible relative z-10">
+        {/* Popular Movies Section - Ensure it has proper overflow handling */}
+        <section className="overflow-hidden relative z-10">
           <PopularMovies />
         </section>
 
@@ -407,6 +407,7 @@ const AppContent: React.FC = () => {
           className={`main-content flex-grow transition-all duration-300 pb-16 sm:pb-0 overflow-x-hidden ${
             isSidebarExpanded ? "xl:ml-240" : ""
           }`}
+          style={{ overscrollBehaviorX: "contain" }}
         >
           <Routes>
             <Route path="/" element={<HomePage />} />

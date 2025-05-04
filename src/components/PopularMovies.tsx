@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import LazyImage, {
   DEFAULT_POSTER_FALLBACK_IMAGE,
@@ -170,7 +170,7 @@ const PopularMovies: React.FC = () => {
     },
   };
 
-  // Add CSS for card styling without shooting star animation
+  // Add CSS for card styling and scroll controls
   const movieCardCss = `
   @keyframes fadeIn {
     from {
@@ -204,6 +204,10 @@ const PopularMovies: React.FC = () => {
     z-index: 1;
     /* Add better shadow instead of glowing effect on mobile */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    /* Add scroll snap */
+    scroll-snap-align: start;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .popular-movie-card:hover {
@@ -211,10 +215,60 @@ const PopularMovies: React.FC = () => {
     box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5), 0 4px 6px -2px rgba(59, 130, 246, 0.3);
   }
 
-  .movies-grid-container {
-    padding: 10px;
-    margin: -10px;
-    overflow: visible !important;
+  .movies-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    overflow-x: auto;
+    /* Add scroll snap */
+    scroll-snap-type: x proximity;
+    scroll-padding: 0 16px;
+    padding: 10px 0;
+    margin: -10px 0;
+    width: auto;
+    flex-wrap: nowrap;
+  }
+
+  .movies-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+
+  .movies-wrapper {
+    overflow-x: hidden !important;
+    position: relative;
+    width: 100%;
+  }
+
+  /* Scroll controls */
+  .scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .scroll-button:hover {
+    background-color: rgba(59, 130, 246, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .scroll-button.left {
+    left: 10px;
+  }
+
+  .scroll-button.right {
+    right: 10px;
   }
 
   /* Use simpler effect for touch devices */
@@ -223,14 +277,105 @@ const PopularMovies: React.FC = () => {
       transform: scale(0.98) translateY(0);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
     }
+    
+    .scroll-button {
+      opacity: 0.8;
+    }
   }
   `;
 
   // Filter out any movies without valid data
   const validMovies = popularMovies.filter((movie) => movie.title);
 
+  // Reference for scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  // Functions for scrolling
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = Math.min(container.clientWidth * 0.8, 800);
+      container.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = Math.min(container.clientWidth * 0.8, 800);
+      container.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Touch event handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Prevent default to avoid page scrolling while swiping horizontally
+    if (touchStartX !== null) {
+      const touchCurrentX = e.touches[0].clientX;
+      const diff = touchStartX - touchCurrentX;
+      if (Math.abs(diff) > 5) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+
+    // Swipe threshold of 50px
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        // Swipe left to scroll right
+        scrollRight();
+      } else {
+        // Swipe right to scroll left
+        scrollLeft();
+      }
+    }
+
+    setTouchStartX(null);
+  };
+
+  // Add passive: false for touch events to allow preventDefault() in touchmove
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const preventDefaultTouchMove = (e: TouchEvent) => {
+      if (touchStartX !== null) {
+        const touchCurrentX = e.touches[0].clientX;
+        const diff = touchStartX - touchCurrentX;
+        if (Math.abs(diff) > 5) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    container.addEventListener("touchmove", preventDefaultTouchMove, {
+      passive: false,
+    });
+
+    return () => {
+      container.removeEventListener("touchmove", preventDefaultTouchMove);
+    };
+  }, [touchStartX]);
+
   return (
-    <section className="py-8 bg-gray-900 dark:bg-gray-950 overflow-visible">
+    <section className="py-8 bg-gray-900 dark:bg-gray-950">
       {/* Add the custom CSS */}
       <style dangerouslySetInnerHTML={{ __html: movieCardCss }} />
 
@@ -273,73 +418,124 @@ const PopularMovies: React.FC = () => {
           </div>
         )}
 
-        {/* Movies grid with optimized image loading */}
+        {/* Movies row with scroll controls */}
         {validMovies.length > 0 && (
-          <div className="overflow-visible py-4">
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 movies-grid-container"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
+          <div className="relative overflow-hidden pb-8 movies-wrapper">
+            {/* Left scroll button */}
+            <button
+              onClick={scrollLeft}
+              className="scroll-button left"
+              aria-label="Scroll left"
             >
-              {validMovies.map((movie, index) => (
-                <motion.div
-                  key={movie.id}
-                  className="bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 popular-movie-card"
-                  variants={cardVariants}
-                  layout
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  {/* Movie poster with priority loading for visible items */}
-                  <div className="w-full h-[200px] md:h-[250px] lg:h-[300px] relative">
-                    <LazyImage
-                      src={movie.imageUrl}
-                      alt={`${movie.title} poster`}
-                      className="w-full h-full object-cover object-center"
-                      fallbackSrc={
-                        movie.fallbackImageUrl || DEFAULT_POSTER_FALLBACK_IMAGE
-                      }
-                      priority={index < 10} // Set all images to priority loading for faster initial render
-                      aspectRatio="poster"
-                    />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
 
-                    {/* Rating badge - optimized to always be visible */}
-                    <div className="absolute top-2 right-2 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center">
-                      <span className="text-xs font-bold text-white">
-                        {movie.rating}
-                      </span>
+            {/* Right scroll button */}
+            <button
+              onClick={scrollRight}
+              className="scroll-button right"
+              aria-label="Scroll right"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+
+            <div
+              className="overflow-x-auto"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              <motion.div
+                ref={scrollContainerRef}
+                className="flex space-x-4 md:space-x-6 w-max movies-container py-4 carousel-touch-container"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                {validMovies.map((movie, index) => (
+                  <motion.div
+                    key={movie.id}
+                    className="min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex-shrink-0 bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 popular-movie-card"
+                    variants={cardVariants}
+                    layout
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                    {/* Movie poster with priority loading for visible items */}
+                    <div className="w-full h-[200px] md:h-[250px] relative">
+                      <LazyImage
+                        src={movie.imageUrl}
+                        alt={`${movie.title} poster`}
+                        className="w-full h-full object-cover object-center"
+                        fallbackSrc={
+                          movie.fallbackImageUrl ||
+                          DEFAULT_POSTER_FALLBACK_IMAGE
+                        }
+                        priority={index < 5} // Set first 5 images to priority loading
+                        aspectRatio="poster"
+                      />
+
+                      {/* Rating badge - optimized to always be visible */}
+                      <div className="absolute top-2 right-2 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center">
+                        <span className="text-xs font-bold text-white">
+                          {movie.rating}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Movie info with optimized render */}
-                  <div className="p-3">
-                    <h3 className="text-white font-medium truncate">
-                      {movie.title}
-                    </h3>
-                    <div className="flex justify-between text-gray-400 text-xs mt-1">
-                      <span>{movie.year}</span>
-                      <button
-                        className="text-blue-400 hover:text-blue-300"
-                        aria-label={`Add ${movie.title} to watchlist`}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+                    {/* Movie info with optimized render */}
+                    <div className="p-3">
+                      <h3 className="text-white font-medium truncate">
+                        {movie.title}
+                      </h3>
+                      <div className="flex justify-between text-gray-400 text-xs mt-1">
+                        <span>{movie.year}</span>
+                        <button
+                          className="text-blue-400 hover:text-blue-300"
+                          aria-label={`Add ${movie.title} to watchlist`}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         )}
       </div>
