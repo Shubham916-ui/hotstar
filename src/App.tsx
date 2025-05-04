@@ -32,9 +32,9 @@ const HomePage = () => {
       </section>
 
       {/* Content Sections */}
-      <div className="space-y-2 mt-2">
-        {/* Trending Now Section */}
-        <section>
+      <div className="space-y-2 mt-2 overflow-hidden">
+        {/* Trending Now Section - Add overflow-visible */}
+        <section className="overflow-visible">
           <TrendingNow />
         </section>
 
@@ -43,14 +43,14 @@ const HomePage = () => {
           <TimeBasedContent />
         </section>
 
-        {/* Popular Movies Section */}
-        <section>
+        {/* Popular Movies Section - Add overflow-visible */}
+        <section className="overflow-visible relative z-10">
           <PopularMovies />
         </section>
 
         {/* Welcome Section */}
         <motion.section
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-0"
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -392,14 +392,14 @@ const AppContent: React.FC = () => {
   return (
     <Router>
       <div
-        className={`flex flex-col min-h-screen bg-gray-900 text-white dark:bg-gray-950 ${
+        className={`flex flex-col min-h-screen bg-gray-900 text-white dark:bg-gray-950 overflow-x-hidden ${
           isTransitioning ? "theme-transitioning" : ""
         }`}
       >
         <SlimSidebar onExpansionChange={handleSidebarExpand} />
 
         <div
-          className={`main-content flex-grow transition-all duration-300 pb-16 sm:pb-0 ${
+          className={`main-content flex-grow transition-all duration-300 pb-16 sm:pb-0 overflow-x-hidden ${
             isSidebarExpanded ? "xl:ml-240" : ""
           }`}
         >

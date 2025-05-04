@@ -9,9 +9,16 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-10">
           {/* Column 1: Company Info */}
           <div className="col-span-1 md:col-span-3 lg:col-span-1">
-            <h3 className="text-white font-bold text-lg mb-4">Hotstar</h3>
+            <div className="flex items-center gap-2 mb-2">
+              <img
+                src="/images/chat-logo.png"
+                alt="Logo"
+                className="h-7 w-7"
+                style={{ borderRadius: "50%" }}
+              />
+            </div>
             <p className="text-sm mb-4">
-              Watch your favorite movies, TV shows, and live sports on Hotstar
+              Watch your favorite movies, TV shows, and live sports
             </p>
             <nav
               className="flex items-center space-x-4 mt-6"
@@ -301,7 +308,7 @@ const Footer: React.FC = () => {
         {/* Copyright section */}
         <div className="border-t border-gray-800 pt-6">
           <p className="text-sm text-center">
-            &copy; {new Date().getFullYear()} Hotstar. All rights reserved.
+            &copy; {new Date().getFullYear()} All rights reserved.
           </p>
         </div>
       </div>

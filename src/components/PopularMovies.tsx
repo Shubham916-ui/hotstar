@@ -170,11 +170,70 @@ const PopularMovies: React.FC = () => {
     },
   };
 
+  // Add CSS for card styling without shooting star animation
+  const movieCardCss = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out forwards;
+  }
+  .animate-fadeOut {
+    animation: fadeOut 0.3s ease-in-out forwards;
+  }
+
+  .popular-movie-card {
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    transition: all 0.3s ease;
+    will-change: transform;
+    z-index: 1;
+    /* Add better shadow instead of glowing effect on mobile */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .popular-movie-card:hover {
+    z-index: 10;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5), 0 4px 6px -2px rgba(59, 130, 246, 0.3);
+  }
+
+  .movies-grid-container {
+    padding: 10px;
+    margin: -10px;
+    overflow: visible !important;
+  }
+
+  /* Use simpler effect for touch devices */
+  @media (hover: none) {
+    .popular-movie-card:active {
+      transform: scale(0.98) translateY(0);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    }
+  }
+  `;
+
   // Filter out any movies without valid data
   const validMovies = popularMovies.filter((movie) => movie.title);
 
   return (
-    <section className="py-8 bg-gray-900 dark:bg-gray-950">
+    <section className="py-8 bg-gray-900 dark:bg-gray-950 overflow-visible">
+      {/* Add the custom CSS */}
+      <style dangerouslySetInnerHTML={{ __html: movieCardCss }} />
+
       <div className="px-6 md:px-16 lg:px-24">
         {/* Section header with title and see all link */}
         <motion.div
@@ -216,98 +275,74 @@ const PopularMovies: React.FC = () => {
 
         {/* Movies grid with optimized image loading */}
         {validMovies.length > 0 && (
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-          >
-            {validMovies.map((movie, index) => (
-              <motion.div
-                key={movie.id}
-                className="bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                variants={cardVariants}
-                // Add layout prop for smoother loading transition
-                layout
-              >
-                {/* Movie poster with priority loading for visible items */}
-                <div className="w-full h-[200px] md:h-[250px] lg:h-[300px] relative">
-                  <LazyImage
-                    src={movie.imageUrl}
-                    alt={`${movie.title} poster`}
-                    className="w-full h-full object-cover object-center"
-                    fallbackSrc={
-                      movie.fallbackImageUrl || DEFAULT_POSTER_FALLBACK_IMAGE
-                    }
-                    priority={index < 10} // Set all images to priority loading for faster initial render
-                    aspectRatio="poster"
-                  />
+          <div className="overflow-visible py-4">
+            <motion.div
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 movies-grid-container"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              {validMovies.map((movie, index) => (
+                <motion.div
+                  key={movie.id}
+                  className="bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 popular-movie-card"
+                  variants={cardVariants}
+                  layout
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  {/* Movie poster with priority loading for visible items */}
+                  <div className="w-full h-[200px] md:h-[250px] lg:h-[300px] relative">
+                    <LazyImage
+                      src={movie.imageUrl}
+                      alt={`${movie.title} poster`}
+                      className="w-full h-full object-cover object-center"
+                      fallbackSrc={
+                        movie.fallbackImageUrl || DEFAULT_POSTER_FALLBACK_IMAGE
+                      }
+                      priority={index < 10} // Set all images to priority loading for faster initial render
+                      aspectRatio="poster"
+                    />
 
-                  {/* Rating badge - optimized to always be visible */}
-                  <div className="absolute top-2 right-2 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center">
-                    <span className="text-xs font-bold text-white">
-                      {movie.rating}
-                    </span>
+                    {/* Rating badge - optimized to always be visible */}
+                    <div className="absolute top-2 right-2 bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {movie.rating}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Movie info with optimized render */}
-                <div className="p-3">
-                  <h3 className="text-white font-medium truncate">
-                    {movie.title}
-                  </h3>
-                  <div className="flex justify-between text-gray-400 text-xs mt-1">
-                    <span>{movie.year}</span>
-                    <button
-                      className="text-blue-400 hover:text-blue-300"
-                      aria-label={`Add ${movie.title} to watchlist`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
+                  {/* Movie info with optimized render */}
+                  <div className="p-3">
+                    <h3 className="text-white font-medium truncate">
+                      {movie.title}
+                    </h3>
+                    <div className="flex justify-between text-gray-400 text-xs mt-1">
+                      <span>{movie.year}</span>
+                      <button
+                        className="text-blue-400 hover:text-blue-300"
+                        aria-label={`Add ${movie.title} to watchlist`}
                       >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         )}
       </div>
-
-      {/* Add CSS for optimized animations */}
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes fadeOut {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in-out forwards;
-        }
-        .animate-fadeOut {
-          animation: fadeOut 0.3s ease-in-out forwards;
-        }
-      `}</style>
     </section>
   );
 };

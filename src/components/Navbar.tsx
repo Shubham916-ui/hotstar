@@ -143,11 +143,13 @@ const Navbar: React.FC = () => {
             <div className="flex items-center">
               <Link to="/" className="flex-shrink-0 flex items-center">
                 {/* Logo */}
-                <div className="text-white font-bold text-2xl cursor-pointer hover:text-blue-200 transition-colors duration-300">
-                  <span className="text-blue-300 hover:text-blue-100 transition-colors duration-300 dark:text-blue-400">
-                    Hot
-                  </span>
-                  star
+                <div className="text-white font-bold text-2xl cursor-pointer hover:text-blue-200 transition-colors duration-300 flex items-center gap-2">
+                  <img
+                    src="/images/chat-logo.png"
+                    alt="Logo"
+                    className="h-9 w-9"
+                    style={{ borderRadius: "50%" }}
+                  />
                 </div>
               </Link>
             </div>
@@ -400,4 +402,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
- 

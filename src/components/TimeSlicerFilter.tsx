@@ -151,7 +151,11 @@ const TimeSlicerFilter: React.FC<TimeSlicerFilterProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="bg-gray-800 rounded-lg p-4 shadow-lg"
-        style={{ willChange: "transform, opacity" }}
+        style={{
+          willChange: "transform, opacity",
+          backgroundColor: "#1f2937",
+          overscrollBehavior: "none",
+        }}
       >
         {/* Time Selection Section */}
         <h3 className="text-xl text-white font-bold mb-4 flex items-center">

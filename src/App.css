@@ -3,17 +3,51 @@
 /* For smooth scrolling */
 html {
   scroll-behavior: smooth;
+  overscroll-behavior-y: none;
+  background-color: #111827;
 }
 
 /* For preventing overflow issues */
 body {
   overflow-x: hidden;
+  overscroll-behavior-y: none;
+  background-color: #111827;
 }
 
 /* Remove outline on mobile devices */
 @media (max-width: 768px) {
   * {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile-specific overscroll fixes */
+  html,
+  body {
+    overscroll-behavior-y: none;
+    background-color: #111827;
+  }
+
+  /* Ensure no white flash on bounce */
+  :root::before {
+    content: "";
+    position: fixed;
+    top: -100vh;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: #111827;
+    z-index: -1;
+  }
+
+  :root::after {
+    content: "";
+    position: fixed;
+    bottom: -100vh;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: #111827;
+    z-index: -1;
   }
 }
 

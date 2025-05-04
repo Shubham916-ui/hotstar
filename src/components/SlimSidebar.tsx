@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 interface SlimSidebarProps {
@@ -449,18 +449,45 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
     }
   };
 
-  // Handle mouse enter/leave for desktop
-  const handleMouseEnter = () => {
-    if (!isMobile) {
-      setIsExpanded(true);
-    }
-  };
+  // Add debounce mechanism for sidebar expansion
+  const expandTimeoutRef = useRef<number | null>(null);
 
-  const handleMouseLeave = () => {
-    if (!isMobile) {
-      setIsExpanded(false);
+  // Replace with debounced mouse enter/leave handlers
+  const handleMouseEnter = useCallback(() => {
+    if (isMobile) return;
+
+    // Clear any pending collapse timeout
+    if (expandTimeoutRef.current) {
+      window.clearTimeout(expandTimeoutRef.current);
+      expandTimeoutRef.current = null;
     }
-  };
+
+    // Set expanded immediately without animation for better performance
+    setIsExpanded(true);
+  }, [isMobile]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isMobile) return;
+
+    // Debounced collapse to prevent flicker
+    if (expandTimeoutRef.current) {
+      window.clearTimeout(expandTimeoutRef.current);
+    }
+
+    expandTimeoutRef.current = window.setTimeout(() => {
+      setIsExpanded(false);
+      expandTimeoutRef.current = null;
+    }, 100);
+  }, [isMobile]);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (expandTimeoutRef.current) {
+        window.clearTimeout(expandTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle menu item click
   const handleMenuItemClick = (item: any, event: React.MouseEvent) => {
@@ -472,26 +499,23 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
 
   return (
     <>
-      {/* Semi-transparent overlay with blur effect */}
-      <div
-        className={`fixed inset-0 z-40 slim-sidebar-overlay ${
-          isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        style={{
-          background:
-            currentTheme === "dark"
-              ? "rgba(0, 0, 0, 0.5)"
-              : "rgba(0, 0, 0, 0.2)",
-          backdropFilter: "blur(3px)",
-          transition:
-            "opacity 300ms cubic-bezier(0.4, 0, 0.2, 1), backdrop-filter 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-          willChange: "opacity, backdrop-filter",
-        }}
-        onClick={() => setIsExpanded(false)}
-        aria-hidden="true"
-      />
+      {/* Simplified overlay without blur for better performance */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-40"
+          style={{
+            background:
+              currentTheme === "dark"
+                ? "rgba(0, 0, 0, 0.5)"
+                : "rgba(0, 0, 0, 0.2)",
+            transition: "opacity 200ms ease-out",
+          }}
+          onClick={() => setIsExpanded(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Main sidebar container with enhanced animations */}
+      {/* Main sidebar container with simplified animations */}
       <div
         ref={sidebarRef}
         className={`fixed left-0 top-0 h-full z-50 slim-sidebar ${
@@ -499,14 +523,14 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
         }`}
         style={{
           width: isExpanded ? "240px" : "60px",
-          background: `${theme.background} !important`,
-          backdropFilter: "blur(8px) !important",
-          boxShadow: `0 0 12px ${theme.accentHover}`,
+          background: theme.background,
+          boxShadow: `0 0 10px rgba(0, 0, 0, 0.2)`,
           borderRight: `1px solid ${theme.border}`,
-          transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-          transform: isExpanded ? "scale(1.02)" : "scale(1)",
-          willChange: "transform, width, opacity",
+          transition: "width 250ms ease-out",
           color: theme.text,
+          // Hardware acceleration
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -519,36 +543,41 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
       >
         {/* Logo Section */}
         <div
-          className="h-14 flex justify-center items-center transition-all duration-300"
+          className="h-14 flex justify-center items-center"
           style={{
             borderBottom: `1px solid ${theme.border}`,
             background: "transparent",
-            transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "color 300ms ease-out",
           }}
         >
           {isExpanded ? (
             <div
-              className="font-bold text-xl cursor-pointer transition-all"
+              className="font-bold text-xl cursor-pointer"
               style={{
-                textShadow: `0 0 10px ${theme.accentHover}`,
-                animation: "fadeInLogo 400ms cubic-bezier(0.4, 0, 0.2, 1)",
-                willChange: "transform, opacity",
                 color: theme.text,
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
               }}
             >
-              <span style={{ color: hotstarBlue }}>Hot</span>
-              star
+              <img
+                src="/images/chat-logo.png"
+                alt="Logo"
+                style={{ height: "28px", width: "28px", borderRadius: "50%" }}
+              />
             </div>
           ) : (
             <div
-              className="font-bold text-lg cursor-pointer transition-all"
+              className="font-bold text-lg cursor-pointer"
               style={{
-                transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                willChange: "transform, opacity",
                 color: theme.text,
               }}
             >
-              <span style={{ color: hotstarBlue }}>H</span>
+              <img
+                src="/images/chat-logo.png"
+                alt="Logo"
+                style={{ height: "28px", width: "28px", borderRadius: "50%" }}
+              />
             </div>
           )}
         </div>
@@ -595,32 +624,13 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
                         : "#9ca3af",
                       borderLeft: active ? `3px solid ${hotstarCyan}` : "none",
                       position: "relative",
-                      transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                      animation: isExpanded
-                        ? `fadeInMenuItem 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards ${
-                            index * 30
-                          }ms`
-                        : "none",
-                      opacity: isExpanded ? "0" : "1", // Start at 0 opacity for animation when expanded
-                      willChange: "transform, opacity, background",
+                      transition: "all 250ms ease-out",
+                      opacity: 1, // Keep consistent opacity
                     }}
                     onMouseEnter={() => !isMobile && setHoveredItem(item.id)}
                     onMouseLeave={() => !isMobile && setHoveredItem(null)}
                   >
-                    <div
-                      className="menu-icon-container"
-                      style={{
-                        animation:
-                          isExpanded && !isMobile
-                            ? "pulseIcon 0.6s cubic-bezier(0.4, 0, 0.2, 1)"
-                            : "none",
-                        transition:
-                          "transform 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                        willChange: "transform",
-                      }}
-                    >
-                      {item.icon}
-                    </div>
+                    <div className="menu-icon-container">{item.icon}</div>
 
                     <span
                       className="menu-text ml-3 whitespace-nowrap font-medium"
@@ -629,11 +639,10 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
                         transform: isExpanded
                           ? "translateX(0)"
                           : "translateX(-10px)",
-                        transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                        textShadow: "0 0 8px rgba(0, 0, 0, 0.5)",
+                        transition:
+                          "opacity 200ms ease-out, transform 250ms ease-out",
                         position: isExpanded ? "relative" : "absolute",
                         letterSpacing: "0.5px",
-                        willChange: "transform, opacity, letter-spacing",
                       }}
                     >
                       {item.label}
@@ -930,7 +939,7 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
                 id="search-modal-title"
                 className="text-xl font-bold text-white"
               >
-                Search Hotstar
+                Search
               </h3>
               <button
                 onClick={() => setShowSearchModal(false)}
@@ -1051,277 +1060,60 @@ const SlimSidebar: React.FC<SlimSidebarProps> = ({ onExpansionChange }) => {
       )}
 
       <style>{`
+        /* Remove complex animations */
         @keyframes fadeInMenuItem {
-          from {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
-        @keyframes pulseIcon {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.2);
-          }
-          100% {
-            transform: scale(1);
-          }
+        /* Simplified pulse animation */
+        @keyframes simplePulse {
+          0% { opacity: 0.9; }
+          50% { opacity: 1; }
+          100% { opacity: 0.9; }
         }
 
-        @keyframes badgePulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.12);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-
-        @keyframes fadeInLogo {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes fadeInPreview {
-          from {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        /* Infinite subtle pulse for Upgrade button */
-        @keyframes upgradePulse {
-          0% {
-            box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.5);
-          }
-          70% {
-            box-shadow: 0 0 10px 0 rgba(0, 255, 255, 0);
-          }
-          100% {
-            box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
-          }
-        }
-
-        /* Special pulse for search button */
-        @keyframes searchPulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-
-        /* Menu Item Hover Effects */
-        .menu-item:hover:not(.menu-item-active) {
-          background: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1)) !important;
-        }
-
-        .menu-item:hover .menu-icon-container {
-          transform: translateY(-2px) !important;
-        }
-
-        .menu-item:hover .menu-text {
-          letter-spacing: 1px !important;
-        }
-
-        /* Focus styles for keyboard navigation */
-        .menu-item:focus-visible {
-          outline: 2px solid rgba(0, 255, 255, 0.6) !important;
-          outline-offset: 2px;
-        }
-
-        input:focus-visible, button:focus-visible {
-          outline: 2px solid rgba(0, 255, 255, 0.6) !important;
-          outline-offset: 2px;
-        }
-
-        /* Search button specific styles */
-        .search-button .menu-icon-container {
-          color: #1f80e0;
-        }
-
-        .search-button:hover .menu-icon-container {
-          animation: searchPulse 1s infinite cubic-bezier(0.4, 0, 0.2, 1) !important;
-          color: rgba(0, 255, 255, 0.8) !important;
-        }
-
-        /* Active item styling */
-        .menu-item-active {
-          background-color: rgba(31, 128, 224, 0.15) !important;
-          box-shadow: 0 0 10px rgba(31, 128, 224, 0.1);
-        }
-
-        /* Upgrade button pulse effect */
-        .upgrade-button {
-          position: relative;
-          overflow: hidden;
-        }
-
-        .upgrade-button::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          border-radius: 8px;
-          animation: upgradePulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Custom scrollbar styling */
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 2px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(31, 128, 224, 0.5);
-          border-radius: 2px;
-          box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-        }
-
-        /* Force background to be transparent */
-        .slim-sidebar, 
-        .slim-sidebar * {
-          background-color: transparent;
-        }
-
+        /* Force hardware acceleration */
         .slim-sidebar {
-          background: rgba(20, 20, 20, 0.85) !important;
-          backdrop-filter: blur(8px) !important;
+          -webkit-transform: translateZ(0);
+          -moz-transform: translateZ(0);
+          -ms-transform: translateZ(0);
+          -o-transform: translateZ(0);
+          transform: translateZ(0);
+          -webkit-backface-visibility: hidden;
+          -moz-backface-visibility: hidden;
+          -ms-backface-visibility: hidden;
+          backface-visibility: hidden;
+          -webkit-perspective: 1000;
+          -moz-perspective: 1000;
+          -ms-perspective: 1000;
+          perspective: 1000;
         }
 
-        /* Year footer hover effect */
-        .year-footer:hover::before {
-          content: '';
-          position: absolute;
-          top: -10px;
-          left: 0;
-          width: 100%;
-          height: 10px;
-          background: rgba(0, 255, 255, 0.1);
-          animation: digitalRain 2s linear infinite;
+        /* Simplify menu item hover effects */
+        .menu-item:hover:not(.menu-item-active) {
+          background: rgba(255, 255, 255, 0.05) !important;
         }
 
-        @keyframes digitalRain {
-          0% {
-            transform: translateY(0);
-            opacity: 0;
-          }
-          50% {
-            opacity: 0.5;
-          }
-          100% {
-            transform: translateY(20px);
-            opacity: 0;
-          }
+        /* Improve transition performance */
+        .menu-item, .menu-icon-container, .menu-text {
+          transition: all 200ms ease-out !important;
         }
-
-        /* Mobile enhancements */
-        @media (max-width: 768px) {
-          .slim-sidebar {
-            width: 0 !important;
-            background: rgba(20, 20, 20, 0.85) !important;
-            backdrop-filter: blur(8px) !important;
-          }
-
-          .slim-sidebar.expanded {
-            width: 240px !important;
-          }
-
-          .search-modal-content {
-            width: 90%;
-            margin: 0 auto;
-          }
+        
+        /* Remove blur filters and complex effects */
+        .slim-sidebar-overlay {
+          backdrop-filter: none !important;
         }
-
-        /* Light theme specific styles */
-        body.light-theme {
-          background-color: #f5f5f5;
-          color: #121212;
-        }
-
-        .light-theme .menu-item:hover:not(.menu-item-active) {
-          background: linear-gradient(to right, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.08)) !important;
-        }
-
-        .light-theme .menu-item-active {
-          background-color: rgba(0, 102, 204, 0.15) !important;
-          box-shadow: 0 0 10px rgba(0, 102, 204, 0.1);
-        }
-
-        .light-theme .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.05);
-        }
-
-        .light-theme .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(0, 102, 204, 0.5);
-          box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
-        }
-
-        /* Animation for theme switch */
-        @keyframes themeTransition {
-          0% {
-            opacity: 0;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-
-        .theme-transition {
-          animation: themeTransition 500ms ease-in-out;
+        
+        /* Optimize animation performance */
+        * {
+          animation-duration: 200ms !important;
+          animation-timing-function: ease-out !important;
         }
       `}</style>
     </>
   );
 };
 
-export default SlimSidebar;
+// Use React.memo to prevent unnecessary re-renders
+export default React.memo(SlimSidebar);

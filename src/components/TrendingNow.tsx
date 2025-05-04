@@ -41,12 +41,42 @@ const cardVariants = {
     y: -10,
     scale: 1.05,
     transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 10,
+      type: "tween",
+      duration: 0.3,
+      ease: "easeOut",
     },
   },
 };
+
+// CSS for the glowing animation
+const glowKeyframes = `
+/* Fix to ensure cards don't get cut off when moving up */
+.trending-card-container {
+  padding: 20px 0;
+  margin: -20px 0;
+  overflow: visible !important;
+}
+
+.trending-movie-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+  transform-origin: center bottom;
+  position: relative;
+  z-index: 1;
+}
+
+.trending-movie-card:hover {
+  box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.7);
+  z-index: 10;
+}
+
+.trending-section {
+  overflow: visible !important;
+}
+
+.trending-card-wrapper {
+  overflow: visible !important;
+}`;
 
 const TrendingNow: React.FC = () => {
   // State for the modal
@@ -177,9 +207,12 @@ const TrendingNow: React.FC = () => {
 
   return (
     <section
-      className="py-8 bg-gray-900 dark:bg-gray-950"
+      className="py-8 bg-gray-900 dark:bg-gray-950 trending-section"
       aria-labelledby="trending-heading"
     >
+      {/* Add the keyframes for the glow animation */}
+      <style dangerouslySetInnerHTML={{ __html: glowKeyframes }} />
+
       <div className="px-6 md:px-16 lg:px-24">
         {/* Section header with title and see all link */}
         <header className="mb-6">
@@ -233,12 +266,12 @@ const TrendingNow: React.FC = () => {
         {/* Movies Container */}
         {validMovies.length > 0 && (
           <div
-            className="overflow-x-auto pb-8 -mx-6 px-6"
+            className="overflow-visible pb-8 -mx-6 px-6 trending-card-wrapper"
             role="region"
             aria-label="Trending movies and shows"
           >
             <motion.div
-              className="flex space-x-4 md:space-x-6 min-w-max"
+              className="flex space-x-4 md:space-x-6 min-w-max trending-card-container"
               variants={containerVariants}
               initial="hidden"
               animate="show"
@@ -247,13 +280,13 @@ const TrendingNow: React.FC = () => {
                 return (
                   <motion.article
                     key={movie.id}
-                    className="min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex-shrink-0 cursor-pointer"
+                    className="min-w-[160px] md:min-w-[200px] w-[160px] md:w-[200px] flex-shrink-0 cursor-pointer py-5"
                     variants={cardVariants}
                     whileHover="hover"
                     onClick={() => handleOpenModal(movie)}
                   >
                     <div
-                      className="block bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-xl overflow-hidden transition-all duration-300 h-full"
+                      className="block bg-gray-800 dark:bg-gray-800/50 rounded-lg shadow-md overflow-hidden transition-all duration-300 h-full trending-movie-card"
                       aria-label={`View details for ${movie.title}`}
                     >
                       <figure className="relative h-[240px] md:h-[300px] w-full">

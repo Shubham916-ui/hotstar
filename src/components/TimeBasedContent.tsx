@@ -188,7 +188,10 @@ const TimeBasedContent: React.FC = () => {
   }, [selectedTime, selectedContentType]);
 
   return (
-    <section className="py-8 bg-gray-900">
+    <section
+      className="py-8 bg-gray-900 overflow-hidden overscroll-contain"
+      style={{ overscrollBehavior: "none", backgroundColor: "#111827" }}
+    >
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <div>

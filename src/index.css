@@ -5,6 +5,10 @@
 @layer base {
   html {
     @apply transition-colors duration-500;
+    /* Add overscroll behavior */
+    overscroll-behavior: none;
+    /* Dark background for overscroll */
+    background-color: #111827;
   }
 
   body {
@@ -16,6 +20,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: #111827; /* Add dark background to entire page */
+    /* Add dark background to overscroll area */
+    overscroll-behavior: none;
   }
 
   /* Better transitions for specific elements */
@@ -46,6 +52,37 @@
   p,
   span {
     @apply transition-colors duration-300 ease-in-out;
+  }
+
+  /* Global scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: #1a202c;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #1a202c;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #374151;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #4b5563;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background-color: #1a202c;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 #1a202c;
   }
 }
 
